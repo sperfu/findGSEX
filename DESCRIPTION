@@ -3,7 +3,7 @@ Type: Package
 Title: findGSE-X package.
 Version: 0.1.0
 Author: Laiyi Fu & Hequan Sun
-Maintainer: fulaiyi321@163.com
+Maintainer: Laiyi Fu <fulaiyi321@163.com>
 Description: Standalone version of findGSE. 
 License: GPL (>= 2)
 Depends: R(>= 4.0.2)
