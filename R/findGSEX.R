@@ -1,26 +1,3 @@
-# 设置虚拟环境的路径
-#conda_env_path <- "/home/shiny/miniconda3/envs/python38"
-
-# 设置R可执行文件的路径
-#rscript_path <- file.path(conda_env_path, "bin", "Rscript")
-
-# 设置要加载的包的路径
-#package_path <- file.path(conda_env_path, "lib", "R", "library")
-
-# 设置要加载的包的名称
-#packages <- c("scales", "pracma", "fGarch", "png")
-
-# 设置环境变量
-#Sys.setenv(PATH = paste(conda_env_path, Sys.getenv("PATH"), sep = ":"), 
-#           R_HOME = conda_env_path)
-
-# 加载包
-#invisible(sapply(packages, function(p) {
-#  library(p, lib.loc = package_path, character.only = TRUE)
-#}))
-
-# only works with findGSE_sp: here I am generating this file for ../GSE_sp.R: v1.94.est.C_21mer.histo.genome.size.estimated.k21to21.fitted_hetfit_count.txt
-
 # findGSE_X R Package - Estimate Genome Size
 # Version 1.0
 #
@@ -77,6 +54,48 @@
 ##
 ## output:
 ##  *hist_hap_genome_size_est.pdf.
+#
+################################################## main #############################################################
+#' @title Estimating genome size by fitting k-mer frequencies in short reads
+#' with a skew normal distribution model.
+#'
+#' @description findGSE is a function for (heterozygous diploid or homozygous)
+#' genome size estimation by fitting k-mer frequencies iteratively
+#' with a skew normal distribution model. (version still under testing)
+#'
+#' @description To use findGSE, one needs to prepare a histo file,
+#' which contains two tab-separated columns.
+#' The first column gives frequencies at which k-mers occur in reads,
+#' while the second column gives counts of such distinct k-mers.
+#' Parameters k and related histo file are required for any estimation.
+#'
+#' @description Dependencies (R library) required: pracma, fGarch - see INSTALL.
+#'
+#' @description For heterozygous genomes, another parameter about
+#' the average k-mer coverage for the homozygous regions must be provided.
+#'
+#' @param histo is the histo file (mandatory).
+#' @param sizek is the size of k used to generate the histo file (mandatory).
+#' K is involved in calculating heterzygosity if the genome is heterozygous.
+#' @param outdir is the path to write output files (optional).
+#' If not provided, by default results will be written in the folder
+#' where the histo file is.
+#' @param exp_hom a rough average k-mer coverage for finding the homozygous regions.
+#' In general, one can get peaks in the k-mer frequencies file, but has to
+#' determine which one is for the homozygous regions, and which one is for the
+#' heterozygous regions. It is optional, however, it must be provided
+#' if one wants to estimate size for a heterozygous genome.
+#' VALUE for exp_hom must satisfy fp < VALUE < 2*fp, where fp is the freq for homozygous peak.
+#' If not provided, 0 by default assumes the genome is homozygous.
+#' @param species an optional parameter only applied in calculating heterozygosity for human.
+#' This is used to indicate that (lx-ly)*hom_c/2 k-mers should be removed from het-kmers,
+#' where lx is length of chromosome X, ly is length of chromosome Y, and hom_c is the
+#' average k-mer coverage for the homozygous k-mers.
+#' Two estimates will be provied as ORIGINAL_EST CORRECTED_EST:
+#' for males,   select the second (CORRECTED_EST);
+#' for females, select the first  (ORIGINAL_EST)..
+#' @export
+#' 
 
 source('findGSE_v1.95_new.R')
 library(scales)
@@ -179,47 +198,7 @@ kmer_count_modify <- function(start, end, left_right, histx)
   }
   return (histx)
 }
-#
-################################################## main #############################################################
-#' @title Estimating genome size by fitting k-mer frequencies in short reads
-#' with a skew normal distribution model.
-#'
-#' @description findGSE is a function for (heterozygous diploid or homozygous)
-#' genome size estimation by fitting k-mer frequencies iteratively
-#' with a skew normal distribution model. (version still under testing)
-#'
-#' @description To use findGSE, one needs to prepare a histo file,
-#' which contains two tab-separated columns.
-#' The first column gives frequencies at which k-mers occur in reads,
-#' while the second column gives counts of such distinct k-mers.
-#' Parameters k and related histo file are required for any estimation.
-#'
-#' @description Dependencies (R library) required: pracma, fGarch - see INSTALL.
-#'
-#' @description For heterozygous genomes, another parameter about
-#' the average k-mer coverage for the homozygous regions must be provided.
-#'
-#' @param histo is the histo file (mandatory).
-#' @param sizek is the size of k used to generate the histo file (mandatory).
-#' K is involved in calculating heterzygosity if the genome is heterozygous.
-#' @param outdir is the path to write output files (optional).
-#' If not provided, by default results will be written in the folder
-#' where the histo file is.
-#' @param exp_hom a rough average k-mer coverage for finding the homozygous regions.
-#' In general, one can get peaks in the k-mer frequencies file, but has to
-#' determine which one is for the homozygous regions, and which one is for the
-#' heterozygous regions. It is optional, however, it must be provided
-#' if one wants to estimate size for a heterozygous genome.
-#' VALUE for exp_hom must satisfy fp < VALUE < 2*fp, where fp is the freq for homozygous peak.
-#' If not provided, 0 by default assumes the genome is homozygous.
-#' @param species an optional parameter only applied in calculating heterozygosity for human.
-#' This is used to indicate that (lx-ly)*hom_c/2 k-mers should be removed from het-kmers,
-#' where lx is length of chromosome X, ly is length of chromosome Y, and hom_c is the
-#' average k-mer coverage for the homozygous k-mers.
-#' Two estimates will be provied as ORIGINAL_EST CORRECTED_EST:
-#' for males,   select the second (CORRECTED_EST);
-#' for females, select the first  (ORIGINAL_EST)..
-#' @export
+
 findGSE_sp <- function(histo="", sizek=0, outdir="", exp_hom=0, species="",ploidy_ind=2,avg_cov = 0,left_fit_ratio = 0.835)
 {
   # initial values
@@ -1382,7 +1361,7 @@ get_het_pos <- function(histo_data){
 #path="/netscratch/dep_mercier/grp_schneeberger/projects/Potato_multipleCultivars/s2_10_Cultivars_PacBio_HiFi/a2_initial_assembly/"
 #path="/home/biodata/group_sun/reads/proj_solanum_tuberosum/wgs_4_longshu/"
 
-findGSE_X <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit ,output_dir="outfile"){
+findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit ,output_dir="outfile"){
   
   if (!grepl("/$", path)) {
     path <- paste0(path, "/")
