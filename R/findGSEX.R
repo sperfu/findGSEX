@@ -97,7 +97,7 @@
 #' @export
 #' 
 
-source('findGSE_v1.95_new.R')
+source('./findGSE_v1.95_new.R')
 library(scales)
 library(png)
 library(dplyr)
