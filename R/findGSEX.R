@@ -1,8 +1,8 @@
-# findGSE_X R Package - Estimate Genome Size
+# findGSEX R Package - Estimate Genome Size
 # Version 1.0
 #
 # Description:
-# The findGSE_X R package provides a method for estimating genome size by fitting 
+# The findGSEX R package provides a method for estimating genome size by fitting 
 # k-mer frequencies in short reads with a normal distribution model.
 #
 # Author:
@@ -23,7 +23,7 @@
 #
 # Installation:
 # To install and use this package, source the provided R script:
-# devtools::install_github("sperfu/findGSE_X")
+# devtools::install_github("sperfu/findGSEX")
 #
 # Usage:
 # Set options (optional):
@@ -36,13 +36,13 @@
 # exp_hom <- 200
 # ploidy <- 4
 # output_dir <- "outfiles"
-# xlimit <- 800
-# ylimit <- 1.2e+07
+# xlimit <- -1
+# ylimit <- -1
 # range_left <- exp_hom * 0.2
 # range_right <- exp_hom * 0.2
 #
-# Call the findGSE_X function with specified parameters:
-# findGSE_X(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit, output_dir)
+# Call the findGSEX function with specified parameters:
+# findGSEX(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit, output_dir)
 #
 # For any questions, usage inquiries, or reporting potential bugs, please contact the author.
 #
@@ -59,11 +59,11 @@
 #' @title Estimating genome size by fitting k-mer frequencies in short reads
 #' with a skew normal distribution model.
 #'
-#' @description findGSE is a function for (heterozygous diploid or homozygous)
+#' @description findGSEX is a function for (up to 10 ploidy)
 #' genome size estimation by fitting k-mer frequencies iteratively
-#' with a skew normal distribution model. (version still under testing)
+#' with a normal distribution model. (version still under testing)
 #'
-#' @description To use findGSE, one needs to prepare a histo file,
+#' @description To use findGSEX, one needs to prepare a histo file,
 #' which contains two tab-separated columns.
 #' The first column gives frequencies at which k-mers occur in reads,
 #' while the second column gives counts of such distinct k-mers.
@@ -71,8 +71,6 @@
 #'
 #' @description Dependencies (R library) required: pracma, fGarch - see INSTALL.
 #'
-#' @description For heterozygous genomes, another parameter about
-#' the average k-mer coverage for the homozygous regions must be provided.
 #'
 #' @param histo is the histo file (mandatory).
 #' @param sizek is the size of k used to generate the histo file (mandatory).
@@ -87,13 +85,6 @@
 #' if one wants to estimate size for a heterozygous genome.
 #' VALUE for exp_hom must satisfy fp < VALUE < 2*fp, where fp is the freq for homozygous peak.
 #' If not provided, 0 by default assumes the genome is homozygous.
-#' @param species an optional parameter only applied in calculating heterozygosity for human.
-#' This is used to indicate that (lx-ly)*hom_c/2 k-mers should be removed from het-kmers,
-#' where lx is length of chromosome X, ly is length of chromosome Y, and hom_c is the
-#' average k-mer coverage for the homozygous k-mers.
-#' Two estimates will be provied as ORIGINAL_EST CORRECTED_EST:
-#' for males,   select the second (CORRECTED_EST);
-#' for females, select the first  (ORIGINAL_EST)..
 #' @export
 #' 
 
@@ -1372,8 +1363,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
  
   if(missing(exp_hom)) exp_hom <- 0
   if(missing(ploidy)) ploidy <- 2
-  if(missing(xlimit)) xlimit <- 150 
-  if(missing(ylimit)) xlimit <- 3.5e+07 
+  
 
   if(missing(range_left)) range_left <- 6 
   if(missing(range_right)) range_right <- 9 
@@ -1427,10 +1417,29 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
         cat('first_fit_hom read done...\n')
       }
       
-      
+      #load data
+      load("variable_data.Rdata")
+
+      # 
+      genome_size <- data_to_save$genome_size
+      genome_size_filtering_error <- data_to_save$genome_size_filtering_error
+      first_peak_pos <- data_to_save$first_peak_pos
+      genome_size_fitted <- data_to_save$genome_size_fitted
+      fitted_peak_value <- data_to_save$fitted_peak_value
+      first_sd <- data_to_save$first_sd
+      myxifit <- data_to_save$myxifit
+      genome_size_corrected2 <- data_to_save$genome_size_corrected2
+      first_mean_raw <- data_to_save$first_mean_raw
+      repsize <- data_to_save$repsize
 
       ## plot 
       #plot
+      if(xlimit == -1 ){
+        xlimit = first_peak_pos * ploidy * 2
+      }
+      if(ylimit == -1){
+        ylimit = max(histo_fit) * 1.1
+      }
       plot(histo_raw$V1,
           histo_raw$V2,
           xlim=c(1, xlimit),
@@ -1464,20 +1473,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
       
       
 
-      #load data
-      load("variable_data.Rdata")
-
-      # 
-      genome_size <- data_to_save$genome_size
-      genome_size_filtering_error <- data_to_save$genome_size_filtering_error
-      first_peak_pos <- data_to_save$first_peak_pos
-      genome_size_fitted <- data_to_save$genome_size_fitted
-      fitted_peak_value <- data_to_save$fitted_peak_value
-      first_sd <- data_to_save$first_sd
-      myxifit <- data_to_save$myxifit
-      genome_size_corrected2 <- data_to_save$genome_size_corrected2
-      first_mean_raw <- data_to_save$first_mean_raw
-      repsize <- data_to_save$repsize
+      
 
       # 
       if (exp_hom != 0) {
@@ -1715,6 +1711,12 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
               #
                             
               #plot
+              if(xlimit == -1 ){
+                 xlimit = avg_cov * ploidy * 2
+              }
+              if(ylimit == -1){
+                ylimit = max(histo_fit) * 1.1
+              }     
               plot(histo_raw$V1,
                   histo_raw$V2,
                   xlim=c(1, xlimit),
@@ -2030,6 +2032,12 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
             histo_fit                    <- histo_raw_rescale_raw
             histo_fit[1:valley_index, 2] <- histo_het_rescale[1:valley_index, 2]
             #
+            if(xlimit == -1 ){
+                 xlimit = avg_cov_rescale * ploidy * 2
+              }
+              if(ylimit == -1){
+                ylimit = max(histo_het_rescale) * 1.1
+              }  
             plot(histo_raw_rescale_raw$V1,
                 histo_raw_rescale_raw$V2,
                 xlim=c(1, xlimit),
