@@ -1,2 +1,2 @@
-# findGSE_X
-findGSE_X package
+# findGSEX
+findGSEX package
