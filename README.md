@@ -1,4 +1,6 @@
-<img src='http://146.56.237.198:3838/findGSEX/findGSE_logo_new.jpg' width=300 height=200>
+<div align="center">
+    <img src="http://146.56.237.198:3838/findGSEX/findGSE_logo_new.jpg" width="50%" height=auto>
+</div>
 
 # News 🌟
 
