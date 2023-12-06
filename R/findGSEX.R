@@ -1370,7 +1370,7 @@ get_het_pos <- function(histo_data){
 
 
 findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit ,output_dir="outfile"){
-  
+  library(RColorBrewer)
   if (!grepl("/$", path)) {
     path <- paste0(path, "/")
   }
