@@ -93,6 +93,7 @@ library(scales)
 library(png)
 library(dplyr)
 library(RColorBrewer)
+library(ggplot2)
 ## function for minimizing difference from original observed kmer-freq dr: mean, sd, xi, and scaling factor ##
 start_time <- proc.time()
 error_minimize<-function(tooptimize, x, end, xfit, xfit_left, xfit_right, d, min_valid_pos, itr)
