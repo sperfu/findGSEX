@@ -7,10 +7,10 @@ Maintainer: Laiyi Fu <fulaiyi321@163.com>
 Description: Standalone version of findGSEX. 
 License: GPL (>= 2)
 Imports:
-  scales
-  png
-  dplyr
-  RColorBrewer
-  pracma
-  fGarch
-Depends: R(>= 4.0.2)
+  scales (>=1.2.1)
+  png (>=0.1.8)
+  dplyr (>=1.0.9)
+  RColorBrewer (>=1.1.3)
+  pracma (>=2.4.2)
+  fGarch 
+Depends: R(>= 4.2.0)
