@@ -1,7 +1,7 @@
 Package: findGSEX
 Type: Package
-Title: findGSE_X package.
-Version: 0.1.0
+Title: findGSEX package.
+Version: 1.2.0
 Author: Laiyi Fu & Hequan Sun
 Maintainer: Laiyi Fu <fulaiyi321@163.com>
 Description: Standalone version of findGSEX. 
