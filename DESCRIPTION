@@ -11,4 +11,6 @@ Imports:
   png
   dplyr
   RColorBrewer
+  pracma
+  fGarch
 Depends: R(>= 4.0.2)
