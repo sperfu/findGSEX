@@ -85,4 +85,18 @@ conda install -c conda-forge r-ragg
 conda install -c conda-forge r-pkgdown
 ```
 
+If you enconter issues like:
+
+1. could not find function "brewer.pal"
+   
+2.  could not find function "alpha"
+
+Solutions:
+
+```R
+library(RColorBrewer)
+library(ggplot2)
+```
+
+
 
