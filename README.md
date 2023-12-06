@@ -57,7 +57,7 @@ options(warn = -1)
 # Define input parameters:
 
 path <- "histo_files"
-samples <- "O_21mer.histo"
+samples <- "your_file.histo"
 sizek <- 21
 exp_hom <- 200
 ploidy <- 4
@@ -73,6 +73,9 @@ findGSEX(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit,
 
 # For any questions, usage inquiries, or reporting potential bugs, please contact the author.
 ```
+
+After running, You will find 'your_file.histo_hap_genome_size_est.pdf' in your output_dir folder, please give it a try!!!
+
 
 ## Note:
 
