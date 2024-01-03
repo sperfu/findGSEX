@@ -2,13 +2,14 @@
     <img src="http://146.56.237.198:3838/findGSEX/findGSEX_logo1205.png" width="50%" height=auto>
 </div>
 
+# findGSEX
+
+Accurate estimating genome size is a crucial task in sequencing projects. Current methods often struggle with polyploidy or become inefficient when dealing with species that exceed a ploidy level of six. To address these challenges, we introduce findGSEX, an enhanced version of findGSE. findGSEX utilizes a segmented fitting approach to fit a normal distribution to polyploid species within a segmented framework. This ap-proach simplifies the process of single fitting while significantly expanding the range of ploidy levels it can handle
+
 # News 🌟
 
 We have released our backend-server findGSEX and provide a CPU-based version of [findGSEX](http://146.56.237.198:3838/findGSEX/) online platform. Please check it out!!!
 
-
-# findGSEX
-findGSEX package
 
 ## Installation & Usage
 
