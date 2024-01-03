@@ -18,20 +18,20 @@ findGSEX package
 2. Count kmers using jellyfish:
 
 ```bash
-jellyfish count -C -m 21 -s 1000000000 -t 10 *.fastq -o reads.jf
+jellyfish count -C -m 21 -t 1 -s 5G *.fastq -o reads.mer
 ```
 
-*Note: Adjust the memory (-s) and threads (-t) parameters according to your server. This example uses 10 threads and 1GB of RAM. The kmer length (-m) may need to be scaled if you have low coverage or a high error rate. Always use 'canonical kmers' (-C).*
+*Note: Adjust the memory (-s) and threads (-t) parameters according to your server. This example uses 1 threads and 5GB of RAM. The kmer length (-m) may need to be scaled if you have low coverage or a high error rate. Always use 'canonical kmers' (-C).*
 
 3. Export the kmer count histogram:
 
 ```bash
-jellyfish histo -t 10 reads.jf > reads.histo
+jellyfish histo -h 30000000 -t 10 -o reads.histo reads.mer
 ```
 
 *Note: The thread count (-t) should be scaled according to your server.*
 
-4. Upload `reads.histo` to findGSE.
+4. Upload `reads.histo` to findGSEX.
 
 ## Instructions for installing findGSEX package
 
