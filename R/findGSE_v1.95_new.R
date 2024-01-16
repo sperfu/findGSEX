@@ -964,7 +964,7 @@ findGSE_raw <- function(histo="", sizek=0, outdir="", exp_hom=0, species="")
             end_for_mean     <- min(end_for_mean, length(dr[,1])) ####
             #cat("end_for_mean (only one het peak): ", end_for_mean, '\n')
             xtmp             <- rep(1:end_for_mean,ceiling(abs(round(hetfit[1:end_for_mean]))/1000))
-            first_mean_raw   <- 2*mean(xtmp[xtmp>=1 && xtmp<=end_for_mean])
+            first_mean_raw   <- 2*mean(xtmp[xtmp>=1 & xtmp<=end_for_mean])
           }else
             if(het_observed & main_peak_is_hom==F)
             {
@@ -993,11 +993,11 @@ findGSE_raw <- function(histo="", sizek=0, outdir="", exp_hom=0, species="")
                 }
                 ## end   of specific in v1.94
                 xtmp           <- rep(1:end_for_mean,dtmp)
-                first_mean_raw <- mean(xtmp[xtmp>=1 && xtmp<=end_for_mean])
+                first_mean_raw <- mean(xtmp[xtmp>=1 & xtmp<=end_for_mean])
               }else
               {
                 xtmp           <- rep(1:end_for_mean,ceiling(abs(round(yfit2[1:end_for_mean]-hetfit[1:end_for_mean]))/1000))
-                first_mean_raw <- mean(xtmp[xtmp>=1 && xtmp<=end_for_mean]);
+                first_mean_raw <- mean(xtmp[xtmp>=1 & xtmp<=end_for_mean]);
               }
           ##
          
@@ -1158,7 +1158,7 @@ findGSE_raw <- function(histo="", sizek=0, outdir="", exp_hom=0, species="")
       cat("\n caution: some samples have NA predicted for fitted   genome size!\n")
       genome_size_summary2[is.na(genome_size_summary2)] <- 0
     }
-    if(genome_size_summary!=0 && genome_size_summary2!=0)
+    if(length(genome_size_summary[1,])!=0 && length(genome_size_summary2[1,])!=0)
     {
       # record in file
       write.table(genome_size_summary,
