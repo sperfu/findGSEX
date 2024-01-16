@@ -201,7 +201,47 @@ kmer_count_modify <- function(start, end, left_right, histx)
   }
   return (histx)
 }
-
+#
+################################################## main #############################################################
+#' @title Estimating genome size by fitting k-mer frequencies in short reads
+#' with a skew normal distribution model.
+#'
+#' @description findGSE is a function for (heterozygous diploid or homozygous)
+#' genome size estimation by fitting k-mer frequencies iteratively
+#' with a skew normal distribution model. (version still under testing)
+#'
+#' @description To use findGSE, one needs to prepare a histo file,
+#' which contains two tab-separated columns.
+#' The first column gives frequencies at which k-mers occur in reads,
+#' while the second column gives counts of such distinct k-mers.
+#' Parameters k and related histo file are required for any estimation.
+#'
+#' @description Dependencies (R library) required: pracma, fGarch - see INSTALL.
+#'
+#' @description For heterozygous genomes, another parameter about
+#' the average k-mer coverage for the homozygous regions must be provided.
+#'
+#' @param histo is the histo file (mandatory).
+#' @param sizek is the size of k used to generate the histo file (mandatory).
+#' K is involved in calculating heterzygosity if the genome is heterozygous.
+#' @param outdir is the path to write output files (optional).
+#' If not provided, by default results will be written in the folder
+#' where the histo file is.
+#' @param exp_hom a rough average k-mer coverage for finding the homozygous regions.
+#' In general, one can get peaks in the k-mer frequencies file, but has to
+#' determine which one is for the homozygous regions, and which one is for the
+#' heterozygous regions. It is optional, however, it must be provided
+#' if one wants to estimate size for a heterozygous genome.
+#' VALUE for exp_hom must satisfy fp < VALUE < 2*fp, where fp is the freq for homozygous peak.
+#' If not provided, 0 by default assumes the genome is homozygous.
+#' @param species an optional parameter only applied in calculating heterozygosity for human.
+#' This is used to indicate that (lx-ly)*hom_c/2 k-mers should be removed from het-kmers,
+#' where lx is length of chromosome X, ly is length of chromosome Y, and hom_c is the
+#' average k-mer coverage for the homozygous k-mers.
+#' Two estimates will be provied as ORIGINAL_EST CORRECTED_EST:
+#' for males,   select the second (CORRECTED_EST);
+#' for females, select the first  (ORIGINAL_EST)..
+#' @export
 findGSE_sp <- function(histo="", sizek=0, outdir="", exp_hom=0, species="",ploidy_ind=2,avg_cov = 0,left_fit_ratio = 0.835)
 {
   # initial values
@@ -1001,7 +1041,7 @@ findGSE_sp <- function(histo="", sizek=0, outdir="", exp_hom=0, species="",ploid
             #cat("end_for_mean (only one het peak): ", end_for_mean, '\n')
 	    cat("hetfit: ceiling(abs(round(hetfit[1:end_for_mean]))/1000): ",ceiling(abs(round(hetfit[1:end_for_mean]))/1000),"\n")
             xtmp             <- rep(1:end_for_mean,ceiling(abs(round(hetfit[1:end_for_mean]))/1000))
-            first_mean_raw   <- 2*mean(xtmp[xtmp>=1 && xtmp<=end_for_mean])
+            first_mean_raw   <- 2*mean(xtmp[xtmp>=1 & xtmp<=end_for_mean])
           }else
             if(het_observed & main_peak_is_hom==F)
             {
@@ -1030,11 +1070,11 @@ findGSE_sp <- function(histo="", sizek=0, outdir="", exp_hom=0, species="",ploid
                 }
                 ## end   of specific in v1.94
                 xtmp           <- rep(1:end_for_mean,dtmp)
-                first_mean_raw <- mean(xtmp[xtmp>=1 && xtmp<=end_for_mean])
+                first_mean_raw <- mean(xtmp[xtmp>=1 & xtmp<=end_for_mean])
               }else
               {
                 xtmp           <- rep(1:end_for_mean,ceiling(abs(round(yfit2[1:end_for_mean]-hetfit[1:end_for_mean]))/1000))
-                first_mean_raw <- mean(xtmp[xtmp>=1 && xtmp<=end_for_mean]);
+                first_mean_raw <- mean(xtmp[xtmp>=1 & xtmp<=end_for_mean]);
               }
           #
           genome_size_corrected2 <- round(sum(c(1:length(yfit2))*yfit2[1:length(yfit2)]/first_mean_raw))
@@ -1194,7 +1234,7 @@ findGSE_sp <- function(histo="", sizek=0, outdir="", exp_hom=0, species="",ploid
       cat("\n caution: some samples have NA predicted for fitted   genome size!\n")
       genome_size_summary2[is.na(genome_size_summary2)] <- 0
     }
-    if(genome_size_summary!=0 && genome_size_summary2!=0)
+    if(length(genome_size_summary[1,])!=0 & length(genome_size_summary2[1,])!=0)
     {
       # record in file
       write.table(genome_size_summary,
@@ -1367,10 +1407,14 @@ get_het_pos <- function(histo_data){
         #print(end_index)
         return(list(start_index ,end_index))
 }
+# => *_21mer.histo.genome.size.estimated.k21to21.fitted_hetfit_count.txt needed by GSE_sp.R
 
+##  merge function
+#path="/netscratch/dep_mercier/grp_schneeberger/projects/Potato_multipleCultivars/s2_10_Cultivars_PacBio_HiFi/a2_initial_assembly/"
+#path="/home/biodata/group_sun/reads/proj_solanum_tuberosum/wgs_4_longshu/"
 
-findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit ,output_dir="outfile"){
-  library(RColorBrewer)
+findGSE <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit, ylimit ,output_dir="outfile"){
+  
   if (!grepl("/$", path)) {
     path <- paste0(path, "/")
   }
@@ -1580,7 +1624,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
 
       end_time <- proc.time()
       execution_time <- end_time - start_time
-      # print(paste("程序运行时间:", sum(execution_time)))
+      print(paste("Program running time:", sum(execution_time)))
       ## draw png file
       png(paste(path, output_dir ,sample,"_hap_genome_size_est.png", sep=""),  width = 1200, height = 800, res = 200)
       par(family = "Helvetica")
@@ -1766,6 +1810,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
               histo_fit[1:valley_index, 2] <- histo_het[1:valley_index, 2]
               #
               if((het_pos - start_pos) < 7){
+                cat('het_pos - start_pos) < 7 ohhhhh myyyy!!\n')
                 histo_fit[1:het_pos, 2] <- histo_het[1:het_pos, 2]
               }
                             
@@ -1813,7 +1858,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
               
               #
               genome_size_raw = sum(histo_raw[valley_index:len, 1] * histo_raw[valley_index:len, 2] / 1000000) / (ploidy*avg_cov)
-              genome_size     = sum(histo_fit$V1 * histo_fit$V2 / 1000000) / (ploidy*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
+              genome_size     = sum(histo_fit$V1 * (histo_fit$V2 / 1000000)) / (ploidy*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
               #
               
               #
@@ -1919,7 +1964,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                   
                   all_slope_data <- abs(diff(diff(histo_het$V2))[(round(avg_cov)*ploidy_ind-10):(round(avg_cov)*ploidy_ind+10)])
                   if(!all(all_slope_data > 100)){
-                    cat('index is :',ploidy_ind,' slope is ')
+                    cat('index is :',ploidy_ind,' slope is :',all_slope_data,'\n')
                     success_file <- FALSE
                     stoped_ploidy_ind = ploidy_ind - 1
                     break
@@ -1943,7 +1988,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                 rep_size <- genome_size - sum(as.numeric(portion_size))
                 portion_size <- c(portion_size,rep_size)
                 if(!ploidy_assign){
-                    genome_size     = sum(histo_fit$V1 * histo_fit$V2 / 1000000) / (stoped_ploidy_ind*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
+                    genome_size     = sum(histo_fit$V1 * (histo_fit$V2 / 1000000)) / (ploidy*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
                     cat('ploidy for plot is ',stoped_ploidy_ind,'\n')
                 }
                 
@@ -1992,7 +2037,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                 rep_size <- genome_size - sum(portion_size)
                 portion_size <- c(portion_size,rep_size)
                 if(!ploidy_assign){
-                    genome_size     = sum(histo_fit$V1 * histo_fit$V2 / 1000000) / (final_ploidy*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
+                    genome_size     = sum(histo_fit$V1 * (histo_fit$V2 / 1000000)) / (ploidy*avg_cov) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
                     cat('ploidy for plot is ',final_ploidy,'\n')
                 }
                 legend("topright",
@@ -2001,7 +2046,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                   legend = c(paste("Raw", sep=""),
                   paste("Haploid-peak: ", avg_cov, sep=""),
                   paste("Haploid-fitting:", sep=""),
-                  paste("Portion-copy",1:(final_ploidy+1),": ",paste(round(portion_size, digits = 2), sep=","), " Mb", sep=""),
+                  paste("Portion-copy",1:(ploidy+1),": ",paste(round(portion_size, digits = 2), sep=","), " Mb", sep=""),
                   paste("Haploid GSE (avg.): ", round(genome_size, digits = 2), " Mb", sep="")
                   ),
                   cex    = 0.8,
@@ -2018,13 +2063,14 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
     
 	end_time <- proc.time()
 	execution_time <- end_time - start_time
-	# print(paste("程序运行时间:", sum(execution_time)))
+	print(paste("Program running time:", sum(execution_time)))
         # png file
 
         png(paste(path, output_dir ,sample,"_hap_genome_size_est.png", sep=""),  width = 1200, height = 800, res = 200)
         #png(paste(path, output_dir ,sample,"_hap_genome_size_est.png", sep=""),  height=4, width=7.08661)
         par(family = "Helvetica")
         if(!success_file){
+          ploidy_raw = ploidy
           ploidy = stoped_ploidy_ind
         }
         for (ploidy_ind in seq(ploidy)){
@@ -2138,6 +2184,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
           }
           #scaled_factor <- round(het_pos / 50)
           cat("scaled_factor is ",scaled_factor,"\n")
+	  histo_raw <- read.table(paste(path, sample, sep="") ) # from jellyfish
           if((het_pos - start_pos) < 8){
                 histo_org <- histo_raw
                 histo_org[1:(start_pos-1),2] <- 1
@@ -2196,13 +2243,13 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                 # min_v1 <- min(histo_het_rescale$V1)
                 # max_v1 <- max(histo_het_rescale$V1)
 
-                # # 
+                # # 创建一个包含从最小值到最大值的连续整数的数据框
                 # full_v1_range <- data.frame(V1 = seq(min_v1, max_v1))
 
-                # # 
+                # # 使用 approx 函数进行插值，生成新的 V2 值
                 # interpolated_v2 <- approx(histo_het_rescale$V1, histo_het_rescale$V2, xout = full_v1_range$V1)$y
 
-                # 
+                # # 创建包含插值后的数据的数据框
                 # histo_het_rescale_interpolated <- data.frame(V1 = full_v1_range$V1, V2 = interpolated_v2)
                 ## rescale back
                 histo_data_rescaled_tmp <- data.frame(
@@ -2350,7 +2397,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
             
             #
             genome_size_raw = sum(histo_raw_rescale_raw[valley_index:len, 1] * histo_raw_rescale_raw[valley_index:len, 2] / 1000000) / (ploidy*avg_cov_rescale)
-            genome_size     = sum(histo_fit$V1 * histo_fit$V2 / 1000000) / (ploidy*avg_cov_rescale) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
+            genome_size     = sum(histo_fit$V1 * (histo_fit$V2 / 1000000)) / (ploidy*avg_cov_rescale) # tetraploid size: 3374.929 Mb, haploid size: 843.7321
             #
             
             #
@@ -2442,13 +2489,13 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
                   # min_v1 <- min(histo_het_rescale$V1)
                   # max_v1 <- max(histo_het_rescale$V1)
 
-                  # # 
+                  # # 创建一个包含从最小值到最大值的连续整数的数据框
                   # full_v1_range <- data.frame(V1 = seq(min_v1, max_v1))
 
-                  # # 
+                  # # 使用 approx 函数进行插值，生成新的 V2 值
                   # interpolated_v2 <- approx(histo_het_rescale$V1, histo_het_rescale$V2, xout = full_v1_range$V1)$y
 
-                  #
+                  # # 创建包含插值后的数据的数据框
                   # histo_het_rescale_interpolated <- data.frame(V1 = full_v1_range$V1, V2 = interpolated_v2)
 
                   # histo_het_rescale <- histo_het_rescale_interpolated
@@ -2554,13 +2601,14 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
 
       end_time <- proc.time()
       execution_time <- end_time - start_time
-      # print(paste("程序运行时间:", sum(execution_time)))
+      print(paste("Program running time:", sum(execution_time)))
       ## png file draw
       
       
       png(paste(path, output_dir ,sub("_scaled$", "", sample),"_hap_genome_size_est.png", sep=""),  width = 1200, height = 800, res = 200)
       par(family = "Helvetica")
       if(!success_file){
+          ploidy_raw = ploidy
           ploidy = stoped_ploidy_ind
       }
       for (ploidy_ind in seq(ploidy)){
@@ -2570,7 +2618,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
             cat('ploidy index : ',ploidy_ind)
             #png(paste("apple_hap_genome_size_est.jpg", sep=""),  height=400, width=708)
             ####
-            histo_raw <- read.table(paste(path, sample, sep="") ) # from jellyfish
+            histo_raw <- read.table(paste(path, sub("_scaled$", "", sample), sep="") ) # from jellyfish
             histo_het <- read.table(paste(path, output_dir, "v1.94.est.",sample,".genome.size.estimated.k",sizek, "to", sizek, ".fitted_hetfit_count.txt", sep="") ) # from prepare_findGSE.R
             ## re-scale back
             cat("rescaling procedure start...\n")
@@ -2584,13 +2632,13 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
             # min_v1 <- min(histo_het_rescale$V1)
             # max_v1 <- max(histo_het_rescale$V1)
 
-            # #
+            # # 创建一个包含从最小值到最大值的连续整数的数据框
             # full_v1_range <- data.frame(V1 = seq(min_v1, max_v1))
 
-            # # 
+            # # 使用 approx 函数进行插值，生成新的 V2 值
             # interpolated_v2 <- approx(histo_het_rescale$V1, histo_het_rescale$V2, xout = full_v1_range$V1)$y
 
-            # #
+            # # 创建包含插值后的数据的数据框
             # histo_het_rescale_interpolated <- data.frame(V1 = full_v1_range$V1, V2 = interpolated_v2)
             
 
@@ -2614,7 +2662,7 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
 
             happeak_index_rescale <- which.max(histo_het_rescale$V2) # coverage at het-peak 14, x, ...
             range_avg_cov_rescale <- (happeak_index_rescale-range_left):(happeak_index_rescale+range_right)
-            avg_cov_rescale       <- round(sum(histo_raw_rescale_raw[range_avg_cov_rescale, 1] * histo_raw_rescale_raw[range_avg_cov_rescale, 2] / sum(histo_raw_rescale_raw[range_avg_cov_rescale, 2])), digits = 2)
+            #avg_cov_rescale       <- round(sum(histo_raw_rescale_raw[range_avg_cov_rescale, 1] * histo_raw_rescale_raw[range_avg_cov_rescale, 2] / sum(histo_raw_rescale_raw[range_avg_cov_rescale, 2])), digits = 2)
             cat("rescaling procedure end...\n")
 
             ## end re-scale back
@@ -2807,12 +2855,29 @@ findGSEX <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_ri
   #     }
   #   }
     haploid_size_data <- data.frame()
-    if (ploidy == 2) {
-      haploid_size_data <- data.frame(diploid_size = genome_size * ploidy, haploid_size = genome_size)
+    if (ploidy_raw){
+        ploidy = ploidy_raw
+    }
+    if (ploidy == 1) {
+      haploid_size_data <- data.frame(monoploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 2) {
+      haploid_size_data <- data.frame(diploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
     } else if (ploidy == 3) {
-      haploid_size_data <- data.frame(triploid_size = genome_size * ploidy, haploid_size = genome_size)
-    } else if (ploidy >= 4 && ploidy <= 8) {
-      haploid_size_data <- data.frame(tetraploid_size = genome_size * ploidy, haploid_size = genome_size)
+      haploid_size_data <- data.frame(triploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 4) {
+      haploid_size_data <- data.frame(tetraploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 5) {
+      haploid_size_data <- data.frame(pentaploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 6) {
+      haploid_size_data <- data.frame(hexaploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 7) {
+      haploid_size_data <- data.frame(heptaploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 8) {
+      haploid_size_data <- data.frame(octoploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy == 9) {
+      haploid_size_data <- data.frame(nonaploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
+    } else if (ploidy >= 10) {
+      haploid_size_data <- data.frame(decaploid_size = paste0(as.integer(genome_size * ploidy), " Mb"), haploid_size = paste0(as.integer(genome_size), " Mb"))
     } 
     write.csv(haploid_size_data, file = paste(path, output_dir ,sample,"_haploid_size.csv", sep=""), sep = ",",row.names=FALSE, quote=FALSE)
     
