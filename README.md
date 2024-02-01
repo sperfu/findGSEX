@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="http://146.56.237.198:3838/findGSEX/findGSEX_logo1205.png" width="50%" height=auto>
+    <img src="http://146.56.237.198:3838/findGSEX/findGSEX_logo1205-2.png" width="50%" height=auto>
 </div>
 
 # findGSEX
