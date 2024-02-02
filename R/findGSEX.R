@@ -1444,7 +1444,7 @@ findGSE <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_rig
   {
     stop(paste("Cannot find sizek info: ", sizek, ". Program exited.\n",sep=""))
   }
-
+  ploidy_raw <- 0
   for (sample in samples) {
 
     pdf(paste(path, output_dir ,sample,"_hap_genome_size_est.pdf", sep=""), family="Helvetica", height=4, width=7.08661) # need to update
@@ -2855,7 +2855,7 @@ findGSE <- function(path, samples, sizek, exp_hom, ploidy, range_left, range_rig
   #     }
   #   }
     haploid_size_data <- data.frame()
-    if (ploidy_raw){
+    if (ploidy_raw > 0){
         ploidy = ploidy_raw
     }
     if (ploidy == 1) {
