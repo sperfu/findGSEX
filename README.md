@@ -48,6 +48,9 @@ install.packages("devtools")
 ```bash
 devtools::install_github("sperfu/findGSEX")
 ```
+### Data
+
+You can check our demo dataset at our [webserver](http://146.56.237.198:3838/findGSEX/). We have provide precalculated histo file whose ploidy number ranging from tetraploid to octoploid.
 
 ### Usage:
 ```R
@@ -76,6 +79,29 @@ findGSEX(path, samples, sizek, exp_hom, ploidy, range_left, range_right, xlimit,
 ```
 
 After running, You will find 'your_file.histo_hap_genome_size_est.pdf' in your output_dir folder, please give it a try!!!
+
+## Parameter settings
+
+You can reference to our paramenter setting for those species we used in our demo datasets.
+
+| Species           | Expected Hom(Mb) | Ploidy number | Size k |
+|-------------------|------------------|---------------|--------|
+| Chinese sturgeon  | 100              | 8             | 21     |
+| Strawberry        | 100              | 8             | 21     |
+| Wheat             | 150              | 6             | 21     |
+| Redwood           | 80               | 6             | 21     |
+| Cotton            | 150              | 4             | 21     |
+| Javanica          | 200              | 4             | 21     |
+| Potato            | 180              | 4             | 21     |
+| Floridensis       | 220              | 4             | 21     |
+| Crayfish          | 35               | 3             | 21     |
+| Enterolobii       | 130              | 3             | 21     |
+| Incognita         | 200              | 3             | 21     |
+| Seabass           | 80               | 2             | 21     |
+| Bird              | 40               | 2             | 21     |
+| Drosophila        | 50               | 2             | 21     |
+| Pear              | 100              | 2             | 21     |
+| Oyster            | 50               | 2             | 21     |
 
 
 ## Note:
