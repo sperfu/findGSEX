@@ -50,7 +50,7 @@ devtools::install_github("sperfu/findGSEX")
 ```
 ### Data
 
-You can check our demo dataset at our [webserver](http://146.56.237.198:3838/findGSEX/). We have provide precalculated histo file whose ploidy number ranging from tetraploid to octoploid.
+You can check our demo dataset at our [webserver](http://146.56.237.198:3838/findGSEX/) or [drive](https://drive.google.com/drive/folders/1fBuPRxi_J-oMpj6G2KokEUeB_8S8ahH6?usp=share_link) for complete data. We have provide precalculated histo file whose ploidy number ranging from tetraploid to octoploid.
 
 ### Usage:
 ```R
@@ -82,7 +82,7 @@ After running, You will find 'your_file.histo_hap_genome_size_est.pdf' in your o
 
 ## Parameter settings
 
-You can reference to our paramenter setting for those species we used in our demo datasets.
+You can reference to our paramenter setting for those species we used in our [webserver](http://146.56.237.198:3838/findGSEX/) or [demo dataset](https://drive.google.com/drive/folders/1fBuPRxi_J-oMpj6G2KokEUeB_8S8ahH6?usp=share_link).
 
 | Species           | Expected Hom(Mb) | Ploidy number | Size k |
 |-------------------|------------------|---------------|--------|
